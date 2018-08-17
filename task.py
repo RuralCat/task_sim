@@ -3,32 +3,58 @@ from simpy import Environment
 import numpy as np
 from enum import Enum
 import datetime as dt
-from utils import datetime_time
+from utils import Task_Generation_Lamba
+from simulation import InnerTaskProcessor
 
-class TaskType(Enum):
-    """
-    CS - crowd sourcing
-    SC - subcontract
-    SS - self-support
-    """
+class TaskTimeStamp(object):
+    def __init__(self, taskbase, process_time=None):
+        assert isinstance(taskbase, TaskBase)
+        self.processor = taskbase.name
+        self.time = taskbase.now
+        if process_time is not None:
+            self.process_time = process_time
+        else:
+            self.process_time = -1
+class VoucherType(Enum):
+    NOT_DETERMINED = 0
+    LACKED = 1
+    SUFFICIENT = 2
+    SUPPLEMENTARY = 3
 
 class Task(object):
     def __init__(self, id):
         self.id = id
         self.task_type = 0
         self.time_stamps = []
-        self.process_time = []
-        self.voucher = False
+        self._process_time = 0
+        self._processed_time = 0
+        self.voucher = VoucherType.NOT_DETERMINED
 
-    def add_task_stamp(self, taskbase):
-        assert isinstance(taskbase, TaskBase)
-        self.time_stamps.append({'processor' : taskbase.name,
-                                 'time' : taskbase.now})
+    @property
+    def Processed(self):
+        return self._processed_time >= self._process_time
 
-    def set_process_time(self, taskproc):
-        assert isinstance(taskproc, TaskProcessor)
-        self.process_time.append({'processor' : taskproc.name,
-                                 'time' : taskproc.get_process_time()})
+    def update_processed_time(self, tick):
+        self._processed_time += tick
+
+    def enter_processor(self, taskbase):
+        if isinstance(taskbase, TaskProcessor):
+            process_time = taskbase.get_process_time()
+        else:
+            process_time = None
+        # set process time in current processor
+        self._process_time = process_time
+        # create time stamp
+        self.time_stamps.append(TaskTimeStamp(taskbase, process_time))
+        # init processed time
+        self._processed_time = 0
+        # reset vouvher if needed
+        if isinstance(taskbase, InnerTaskProcessor) and self.voucher == VoucherType.SUFFICIENT:
+            self.voucher = VoucherType.NOT_DETERMINED
+
+    def leave_processor(self, taskbase):
+        # create time stamp
+        self.time_stamps.append(TaskTimeStamp(taskbase))
 
     def to_next_stage(self, current_time, start_time, end_time):
         """
@@ -60,10 +86,11 @@ class Task(object):
             raise ValueError('the task has no time stamp')
 
 class TaskBase(object):
-    def __init__(self, env, name):
+    def __init__(self, env, name, tick):
         assert isinstance(env, Environment)
         self.env = env
         self.name = name
+        self.tick = tick
         self._time = dt.datetime(2000, 1, 1)
 
     @property
@@ -77,27 +104,28 @@ class TaskBase(object):
     def time_update(self, minute=1):
         self._time += dt.timedelta(minutes=minute)
 
-
 class TaskGenerator(TaskBase):
-    def __init__(self, env, new_tasks, name='task_generator'):
+    def __init__(self, env, new_tasks, name='task_generator', tick=1):
         assert isinstance(new_tasks, TaskStack)
-        TaskBase.__init__(self, env, name)
+        TaskBase.__init__(self, env, name, tick)
         self.new_tasks = new_tasks
 
     def generate(self):
         while True:
             # create a new task
-            id = 'id_'.format(self.now)
-            task = Task(id, self.now, self.name)
-            task.add_task_stamp(self)
-            self.new_tasks.add_task(task)
+            for _ in range(self.next_task_num):
+                id = 'id_'.format(self.new_tasks.task_count)
+                task = Task(id)
+                self.new_tasks.add_task(task)
             # wait next task
-            yield self.env.timeout(1)
-            self.time_update(1)
+            yield self.env.timeout(self.tick)
+            self.time_update(self.tick)
 
     @property
-    def next_task_time(self):
-        return 1
+    def next_task_num(self):
+        hour = self.clock_time.hour
+        lam = Task_Generation_Lamba[hour]
+        return np.random.poisson(lam, size=1)
 
 class TaskStack(list):
 
@@ -117,32 +145,31 @@ class TaskStack(list):
         return self.pop(0)
 
 class TaskProcessor(TaskBase):
-    def __init__(self, env, name, capability=np.Inf,
+    def __init__(self, env, name, tick=0.5, capability=np.Inf,
                  start_time=dt.time(0, 0), end_time=dt.time(23, 59),
                  process_time=0,
-                 top_taskstack=[], down_taskstacks=[], downweights=None):
-        TaskBase.__init__(self, env, name)
+                 down_processors=[], downweights=None):
+        TaskBase.__init__(self, env, name, tick)
         self.capability = capability
         self.start_time = start_time
         self.end_time = end_time
         self.process_time = process_time
         # create taskstack link
-        assert isinstance(top_taskstack, TaskStack)
-        if isinstance(down_taskstacks, list):
-            for taskstack in down_taskstacks:
-                assert isinstance(taskstack, TaskStack)
+        if isinstance(down_processors, list):
+            for processor in down_processors:
+                assert isinstance(processor, TaskProcessor)
         else:
-            assert isinstance(down_taskstacks, TaskStack)
-        self.top_taskstack = top_taskstack
-        self.down_taskstacks = down_taskstacks
+            assert isinstance(down_processors, TaskProcessor)
+        self.cache_taskstack = TaskStack()
+        self.down_processors = down_processors
         self.down_weights = downweights
         # create working task stack
         self.working_taskstack = TaskStack()
 
     @property
     def working(self):
-        return self.clock_time > self.start_time and \
-               self.clock_time < self.end_time
+        return self.clock_time >= self.start_time and \
+               self.clock_time <= self.end_time
 
     @property
     def capable(self):
@@ -157,45 +184,44 @@ class TaskProcessor(TaskBase):
                 if not self.working_taskstack.is_empty:
                     for _ in range(self.working_taskstack.task_count):
                         task = self.working_taskstack.pop_task()
-                        process_time = self.get_process_time()
-                        if task.to_next_stage(self.now, process_time):
+                        task.update_processed_time(self.tick)
+                        if task.Processed:
+                            task.leave_processor(self)
                             self._push_task_to_next_stage(task)
                         else:
                             self._add_new_task(task)
                 # get new task if processor is capable
                 while self.capable:
-                    if self.top_taskstack.task_count == 0:
+                    if self.cache_taskstack.task_count == 0:
                         break
                     else:
-
+                        task = self.cache_taskstack.pop_task()
+                        task.enter_processor()
                         self._add_new_task(task)
             # update time
-            yield self.env.timeout(0.5)
-            self.time_update(0.5)
+            yield self.env.timeout(self.tick)
+            self.time_update(self.tick)
 
     def get_process_time(self):
         return self.process_time
 
     def _add_new_task(self, task):
-        task = self.top_taskstack.pop_task()
-        task.add_task_stamp(self)
         self.working_taskstack.add_task(task)
 
     def _push_task_to_next_stage(self, task):
-        task.add_task_stamp(self)
         self.__tradition_push(task)
 
     def _tradition_push(self, task):
         # reset voucher to false when task go to next stage
         task.voucher = False
-        if isinstance(self.down_taskstacks, TaskStack):
-            self.down_taskstacks.add_task(task)
+        if isinstance(self.down_processors, TaskProcessor):
+            self.down_processors.cache_taskstack.add_task(task)
         else:
             if self.down_weights:
                 weights = np.cumsum(np.array(self.down_weights))
                 rand_seed = np.random.rand(1)
                 ind = np.nonzero(rand_seed < weights)[0][0]
-                self.down_taskstacks[ind].add_task(task)
+                self.down_processors[ind].cache_taskstack.add_task(task)
             else:
                 raise ValueError('down weights should not be None')
 
@@ -207,5 +233,3 @@ if __name__ == '__main__':
     env.process(gen.generate())
     env.run(until=10)
     print(len(new_tasks))
-    dt.timedelta
-    np.random.rand()

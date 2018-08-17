@@ -1,18 +1,18 @@
 
 
-from task import TaskGenerator, TaskStack, TaskProcessor
+from task import TaskGenerator, TaskStack, TaskProcessor, VoucherType
 from simpy import Environment
 import numpy as np
 import datetime as dt
 
 class InnerTaskProcessor(TaskProcessor):
-    def __init__(self, env, name, capability=np.Inf,
+    def __init__(self, env, name, tick=0.5, capability=np.Inf,
                  start_time=dt.time(0, 0), end_time=dt.time(23, 59),
                  process_time=0,
                  top_taskstack=[], down_taskstacks=[], downweights=None,
                  voucher_taskstack=None, voucher_ratio=0,
                  extend_working=False, last_task_time=dt.time(18,0)):
-        TaskProcessor.__init__(self, env, name, capability,
+        TaskProcessor.__init__(self, env, name, tick, capability,
                                start_time, end_time, process_time,
                                top_taskstack, down_taskstacks, downweights)
         self.voucher_taskstack= voucher_taskstack
@@ -31,27 +31,35 @@ class InnerTaskProcessor(TaskProcessor):
 
     def _add_new_task(self, task):
         if self.extend_working:
-            t = task.time_stamps[-1]['time']
+            t = task.time_stamps[-1].time
             if t < self.last_task_time:
                 self._add_new_task(task)
         else:
             self._add_new_task(task)
 
     def _push_task_to_next_stage(self, task):
-        if self.voucher_taskstack and not task.voucher:
+        # determine voucher status
+        if self.voucher_taskstack is not None and task.voucher == VoucherType.NOT_DETERMINED:
             if np.random.rand(1) < self.voucher_ratio:
-                task.voucher = True
-            if not task.voucher:
-                self.voucher_taskstack.add_task(task)
+                task.voucher = VoucherType.SUFFICIENT
             else:
-                self._tradition_push(task)
+                task.voucher = VoucherType.LACKED
+        else:
+            task.voucher = VoucherType.SUFFICIENT
+        # push task into diffrent branch according to voucher type
+        if task.voucher == VoucherType.LACKED:
+            self.voucher_taskstack.add_task(task)
         else:
             self._tradition_push(task)
 
 
-class VoucherProcessor(object):
-    def __init__(self):
-        pass
+class VoucherProcessor(TaskProcessor):
+    def __init__(self, env, name, tick=0.5, topprocess_time_scale=1.0):
+        TaskProcessor.__init__(self)
+        self.process_time_scale = process_time_scale
+
+    def get_process_time(self):
+        return np.random.exponential(self.process_time_scale, size=1)
 
 if __name__ == '__main__':
     # create process environment
