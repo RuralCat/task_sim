@@ -4,7 +4,6 @@
     <list default="true" id="009a6685-d406-441b-af79-9db85a63cffd" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/simulation.py" beforeDir="false" afterPath="$PROJECT_DIR$/simulation.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/task.py" beforeDir="false" afterPath="$PROJECT_DIR$/task.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -20,12 +19,11 @@
           <file leaf-file-name="task.py" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/task.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="497">
-                  <caret line="171" column="33" selection-start-line="171" selection-start-column="33" selection-end-line="171" selection-end-column="33" />
+                <state relative-caret-position="426">
+                  <caret line="145" column="25" lean-forward="true" selection-start-line="145" selection-start-column="25" selection-end-line="145" selection-end-column="25" />
                   <folding>
                     <element signature="e#1#30#0" expanded="true" />
-                    <element signature="e#4421#4722#0" />
-                    <element signature="e#5002#5705#0" />
+                    <element signature="e#5980#7142#0" />
                   </folding>
                 </state>
               </provider>
@@ -59,8 +57,8 @@
           <file leaf-file-name="simulation.py" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/simulation.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="361">
-                  <caret line="56" column="45" selection-start-line="56" selection-start-column="45" selection-end-line="56" selection-end-column="45" />
+                <state relative-caret-position="399">
+                  <caret line="57" column="85" selection-start-line="57" selection-start-column="85" selection-end-line="57" selection-end-column="85" />
                   <folding>
                     <element signature="e#2#71#0" expanded="true" />
                   </folding>
@@ -79,8 +77,8 @@
     <option name="CHANGED_PATHS">
       <list>
         <option value="$PROJECT_DIR$/utils.py" />
-        <option value="$PROJECT_DIR$/simulation.py" />
         <option value="$PROJECT_DIR$/task.py" />
+        <option value="$PROJECT_DIR$/simulation.py" />
       </list>
     </option>
   </component>
@@ -190,7 +188,7 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <option name="time" value="1" />
+      <option name="time" value="2" />
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
@@ -200,8 +198,7 @@
           <caret line="123" column="13" selection-start-line="123" selection-start-column="13" selection-end-line="123" selection-end-column="13" />
           <folding>
             <element signature="e#1#30#0" expanded="true" />
-            <element signature="e#4421#4722#0" />
-            <element signature="e#5002#5705#0" />
+            <element signature="e#5980#7142#0" />
           </folding>
         </state>
       </provider>
@@ -250,24 +247,23 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/simulation.py">
+    <entry file="file://$PROJECT_DIR$/task.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="361">
-          <caret line="56" column="45" selection-start-line="56" selection-start-column="45" selection-end-line="56" selection-end-column="45" />
+        <state relative-caret-position="426">
+          <caret line="145" column="25" lean-forward="true" selection-start-line="145" selection-start-column="25" selection-end-line="145" selection-end-column="25" />
           <folding>
-            <element signature="e#2#71#0" expanded="true" />
+            <element signature="e#1#30#0" expanded="true" />
+            <element signature="e#5980#7142#0" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/task.py">
+    <entry file="file://$PROJECT_DIR$/simulation.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="497">
-          <caret line="171" column="33" selection-start-line="171" selection-start-column="33" selection-end-line="171" selection-end-column="33" />
+        <state relative-caret-position="399">
+          <caret line="57" column="85" selection-start-line="57" selection-start-column="85" selection-end-line="57" selection-end-column="85" />
           <folding>
-            <element signature="e#1#30#0" expanded="true" />
-            <element signature="e#4421#4722#0" />
-            <element signature="e#5002#5705#0" />
+            <element signature="e#2#71#0" expanded="true" />
           </folding>
         </state>
       </provider>

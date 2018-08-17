@@ -104,28 +104,32 @@ class TaskBase(object):
     def time_update(self, minute=1):
         self._time += dt.timedelta(minutes=minute)
 
-class TaskGenerator(TaskBase):
-    def __init__(self, env, new_tasks, name='task_generator', tick=1):
-        assert isinstance(new_tasks, TaskStack)
-        TaskBase.__init__(self, env, name, tick)
-        self.new_tasks = new_tasks
-
-    def generate(self):
-        while True:
-            # create a new task
-            for _ in range(self.next_task_num):
-                id = 'id_'.format(self.new_tasks.task_count)
-                task = Task(id)
-                self.new_tasks.add_task(task)
-            # wait next task
-            yield self.env.timeout(self.tick)
-            self.time_update(self.tick)
+class TaskGenerator(TaskProcessor):
+    def __init__(self, env, name='task_generator', tick=1,
+                 down_processors=[], downweights=None):
+        TaskProcessor.__init__(self, env, name, tick,
+                               down_processors=down_processors, downweights=downweights)
 
     @property
     def next_task_num(self):
         hour = self.clock_time.hour
         lam = Task_Generation_Lamba[hour]
         return np.random.poisson(lam, size=1)
+
+    def _get_new_task(self):
+        # create new tasks
+        new_tasks = TaskStack()
+        for _ in range(self.next_task_num):
+                id = 'id_'.format(self.new_tasks.task_count)
+                task = Task(id)
+                task.enter_processor()
+                new_tasks.add_task(task)
+        return new_tasks
+
+    def _add_new_task(self, task):
+        assert isinstance(task, TaskStack)
+        for _ in range(task.task_count):
+            self.working_taskstack.add_task(task.pop_task())
 
 class TaskStack(list):
 
@@ -146,8 +150,7 @@ class TaskStack(list):
 
 class TaskProcessor(TaskBase):
     def __init__(self, env, name, tick=0.5, capability=np.Inf,
-                 start_time=dt.time(0, 0), end_time=dt.time(23, 59),
-                 process_time=0,
+                 start_time=dt.time(0, 0), end_time=dt.time(23, 59), process_time=0,
                  down_processors=[], downweights=None):
         TaskBase.__init__(self, env, name, tick)
         self.capability = capability
@@ -195,8 +198,7 @@ class TaskProcessor(TaskBase):
                     if self.cache_taskstack.task_count == 0:
                         break
                     else:
-                        task = self.cache_taskstack.pop_task()
-                        task.enter_processor()
+                        task = self._get_new_task()
                         self._add_new_task(task)
             # update time
             yield self.env.timeout(self.tick)
@@ -204,6 +206,11 @@ class TaskProcessor(TaskBase):
 
     def get_process_time(self):
         return self.process_time
+
+    def _get_new_task(self):
+        task = self.cache_taskstack.pop_task()
+        task.enter_processor()
+        return task
 
     def _add_new_task(self, task):
         self.working_taskstack.add_task(task)

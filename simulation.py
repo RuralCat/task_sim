@@ -9,12 +9,12 @@ class InnerTaskProcessor(TaskProcessor):
     def __init__(self, env, name, tick=0.5, capability=np.Inf,
                  start_time=dt.time(0, 0), end_time=dt.time(23, 59),
                  process_time=0,
-                 top_taskstack=[], down_taskstacks=[], downweights=None,
+                 down_processors=[], downweights=None,
                  voucher_taskstack=None, voucher_ratio=0,
                  extend_working=False, last_task_time=dt.time(18,0)):
         TaskProcessor.__init__(self, env, name, tick, capability,
                                start_time, end_time, process_time,
-                               top_taskstack, down_taskstacks, downweights)
+                               down_processors, downweights)
         self.voucher_taskstack= voucher_taskstack
         self.voucher_ratio = voucher_ratio
         self.extend_working = extend_working
@@ -54,8 +54,8 @@ class InnerTaskProcessor(TaskProcessor):
 
 
 class VoucherProcessor(TaskProcessor):
-    def __init__(self, env, name, tick=0.5, topprocess_time_scale=1.0):
-        TaskProcessor.__init__(self)
+    def __init__(self, env, name, tick=0.5, down_processors=[], topprocess_time_scale=1.0):
+        TaskProcessor.__init__(self, env, name, tick, down_processors=down_processors)
         self.process_time_scale = process_time_scale
 
     def get_process_time(self):
