@@ -15,6 +15,7 @@ class TaskTimeStamp(object):
             self.process_time = process_time
         else:
             self.process_time = -1
+
 class VoucherType(Enum):
     NOT_DETERMINED = 0
     LACKED = 1
@@ -56,6 +57,23 @@ class Task(object):
         # create time stamp
         self.time_stamps.append(TaskTimeStamp(taskbase))
 
+class TaskStack(list):
+
+    @property
+    def task_count(self):
+        return len(self)
+
+    @property
+    def is_empty(self):
+        return True if self.task_count == 0 else False
+
+    def add_task(self, task):
+        assert isinstance(task, Task)
+        self.append(task)
+
+    def pop_task(self):
+        return self.pop(0)
+
 class TaskBase(object):
     def __init__(self, env, name, tick):
         assert isinstance(env, Environment)
@@ -75,54 +93,26 @@ class TaskBase(object):
     def time_update(self, minute=1):
         self._time += dt.timedelta(minutes=minute)
 
-class TaskGenerator(TaskProcessor):
-    def __init__(self, env, name='task_generator', tick=1,
-                 down_processors=[], downweights=None):
-        TaskProcessor.__init__(self, env, name, tick,
-                               down_processors=down_processors, downweights=downweights)
-
-    @property
-    def next_task_num(self):
-        hour = self.clock_time.hour
-        lam = Task_Generation_Lamba[hour]
-        return np.random.poisson(lam, size=1)
-
-    def _get_new_task(self):
-        # create new tasks
-        new_tasks = TaskStack()
-        for _ in range(self.next_task_num):
-                id = 'id_'.format(self.new_tasks.task_count)
-                task = Task(id)
-                task.enter_processor()
-                new_tasks.add_task(task)
-        return new_tasks
-
-    def _add_new_task(self, task):
-        assert isinstance(task, TaskStack)
-        for _ in range(task.task_count):
-            self.working_taskstack.add_task(task.pop_task())
-
-class TaskStack(list):
-
-    @property
-    def task_count(self):
-        return len(self)
-
-    @property
-    def is_empty(self):
-        return True if self.task_count == 0 else False
-
-    def add_task(self, task):
-        assert isinstance(task, Task)
-        self.append(task)
-
-    def pop_task(self):
-        return self.pop(0)
-
 class TaskProcessor(TaskBase):
-    def __init__(self, env, name, tick=0.5, capability=np.Inf,
-                 start_time=dt.time(0, 0), end_time=dt.time(23, 59), process_time=0,
-                 down_processors=[], downweights=None):
+    def __init__(self, env, name,
+                 tick=0.5,
+                 capability=np.Inf,
+                 start_time=dt.time(0, 0),
+                 end_time=dt.time(23, 59),
+                 process_time=0,
+                 down_processors=[],
+                 downweights=None):
+        """
+        :param env: simpy enviroment
+        :param name: processor name used in time stamp
+        :param tick: run 'work' function by tick
+        :param capability: max size of working task stack
+        :param start_time: the start working time of processor
+        :param end_time: the stop working time of processor
+        :param process_time: the process time for task in the processor
+        :param down_processors: next stages for processed task
+        :param downweights: list(number)
+        """
         TaskBase.__init__(self, env, name, tick)
         self.capability = capability
         self.start_time = start_time
@@ -203,6 +193,92 @@ class TaskProcessor(TaskBase):
             else:
                 raise ValueError('down weights should not be None')
 
+class TaskGenerator(TaskProcessor):
+    def __init__(self, env, name='task_generator', tick=1,
+                 down_processors=[], downweights=None):
+        TaskProcessor.__init__(self, env, name, tick,
+                               down_processors=down_processors, downweights=downweights)
+
+    @property
+    def next_task_num(self):
+        hour = self.clock_time.hour
+        lam = Task_Generation_Lamba[hour]
+        return np.random.poisson(lam, size=1)
+
+    def _get_new_task(self):
+        # create new tasks
+        new_tasks = TaskStack()
+        for _ in range(self.next_task_num):
+                id = 'id_'.format(self.new_tasks.task_count)
+                task = Task(id)
+                task.enter_processor()
+                new_tasks.add_task(task)
+        return new_tasks
+
+    def _add_new_task(self, task):
+        assert isinstance(task, TaskStack)
+        for _ in range(task.task_count):
+            self.working_taskstack.add_task(task.pop_task())
+
+class InnerTaskProcessor(TaskProcessor):
+    def __init__(self, env, name, tick=0.5, capability=np.Inf,
+                 start_time=dt.time(0, 0), end_time=dt.time(23, 59),
+                 process_time=0,
+                 down_processors=[], downweights=None,
+                 voucher_taskstack=None, voucher_ratio=0,
+                 extend_working=False, last_task_time=dt.time(18,0)):
+        TaskProcessor.__init__(self, env, name, tick, capability,
+                               start_time, end_time, process_time,
+                               down_processors, downweights)
+        self.voucher_taskstack= voucher_taskstack
+        self.voucher_ratio = voucher_ratio
+        self.extend_working = extend_working
+        self.last_task_time = last_task_time
+
+    @property
+    def working(self):
+        working_flag = self.clock_time >= self.start_time and \
+                       self.clock_time <= self.end_time
+        if self.extend_working:
+            working_flag = working_flag or \
+                           self.working_taskstack.task_count > 0
+        return working_flag
+
+    def _add_new_task(self, task):
+        if self.extend_working:
+            t = task.time_stamps[-1].time
+            if t < self.last_task_time:
+                self._add_new_task(task)
+        else:
+            self._add_new_task(task)
+
+    def _push_task_to_next_stage(self, task):
+        # determine voucher status
+        if self.voucher_taskstack is not None and task.voucher == VoucherType.NOT_DETERMINED:
+            if np.random.rand(1) < self.voucher_ratio:
+                task.voucher = VoucherType.SUFFICIENT
+            else:
+                task.voucher = VoucherType.LACKED
+        else:
+            task.voucher = VoucherType.SUFFICIENT
+        # push task into diffrent branch according to voucher type
+        if task.voucher == VoucherType.LACKED:
+            self.voucher_taskstack.add_task(task)
+        else:
+            self._tradition_push(task)
+
+class VoucherProcessor(TaskProcessor):
+    def __init__(self, env, name, tick=0.5, down_processors=[], topprocess_time_scale=1.0):
+        TaskProcessor.__init__(self, env, name, tick, down_processors=down_processors)
+        self.process_time_scale = process_time_scale
+
+    def get_process_time(self):
+        return np.random.exponential(self.process_time_scale, size=1)
+
+class ResultProcessor(TaskProcessor):
+    @property
+    def working(self):
+        return False
 
 if __name__ == '__main__':
     env = Environment()

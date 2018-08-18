@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="009a6685-d406-441b-af79-9db85a63cffd" name="Default" comment="" />
+    <list default="true" id="009a6685-d406-441b-af79-9db85a63cffd" name="Default" comment="">
+      <change beforePath="$PROJECT_DIR$/simulation.py" beforeDir="false" afterPath="$PROJECT_DIR$/simulation.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/task.py" beforeDir="false" afterPath="$PROJECT_DIR$/task.py" afterDir="false" />
+    </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -16,11 +19,18 @@
           <file leaf-file-name="task.py" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/task.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="1304">
-                  <caret line="116" column="45" lean-forward="true" selection-start-line="116" selection-start-column="45" selection-end-line="116" selection-end-column="45" />
+                <state relative-caret-position="-762">
+                  <caret line="139" column="56" lean-forward="true" selection-start-line="139" selection-start-column="56" selection-end-line="139" selection-end-column="56" />
                   <folding>
                     <element signature="e#1#30#0" expanded="true" />
+                    <element signature="e#210#507#0" />
+                    <element signature="e#537#611#0" />
+                    <element signature="e#637#1785#0" />
+                    <element signature="e#1828#2129#0" />
+                    <element signature="e#3188#3609#0" />
+                    <element signature="e#3899#4558#0" />
                     <element signature="e#5980#7142#0" />
+                    <element signature="e#7474#9398#0" />
                   </folding>
                 </state>
               </provider>
@@ -50,14 +60,28 @@
         </leaf>
       </split-first>
       <split-second>
-        <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+        <leaf>
           <file leaf-file-name="simulation.py" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/simulation.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="522">
-                  <caret line="61" column="69" lean-forward="true" selection-start-line="61" selection-start-column="69" selection-end-line="61" selection-end-column="69" />
+                <state relative-caret-position="199">
+                  <caret line="14" column="63" lean-forward="true" selection-start-line="14" selection-start-column="63" selection-end-line="14" selection-end-column="63" />
                   <folding>
-                    <element signature="e#2#71#0" expanded="true" />
+                    <element signature="e#2#132#0" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="task.py" pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/task.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="212">
+                  <caret line="133" column="21" selection-start-line="133" selection-start-column="21" selection-end-line="133" selection-end-column="21" />
+                  <folding>
+                    <element signature="e#1#30#0" expanded="true" />
+                    <element signature="e#210#507#0" />
+                    <element signature="e#7474#9398#0" />
                   </folding>
                 </state>
               </provider>
@@ -185,7 +209,7 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <option name="time" value="2" />
+      <option name="time" value="3" />
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
@@ -195,7 +219,8 @@
           <caret line="123" column="13" selection-start-line="123" selection-start-column="13" selection-end-line="123" selection-end-column="13" />
           <folding>
             <element signature="e#1#30#0" expanded="true" />
-            <element signature="e#5980#7142#0" />
+            <element signature="e#210#507#0" />
+            <element signature="e#7474#9398#0" />
           </folding>
         </state>
       </provider>
@@ -222,7 +247,7 @@
         <state relative-caret-position="1007">
           <caret line="56" column="47" selection-start-line="56" selection-start-column="47" selection-end-line="56" selection-end-column="47" />
           <folding>
-            <element signature="e#2#71#0" expanded="true" />
+            <element signature="e#2#132#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -244,23 +269,24 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/simulation.py">
+    <entry file="file://$PROJECT_DIR$/task.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="522">
-          <caret line="61" column="69" lean-forward="true" selection-start-line="61" selection-start-column="69" selection-end-line="61" selection-end-column="69" />
+        <state relative-caret-position="212">
+          <caret line="133" column="21" selection-start-line="133" selection-start-column="21" selection-end-line="133" selection-end-column="21" />
           <folding>
-            <element signature="e#2#71#0" expanded="true" />
+            <element signature="e#1#30#0" expanded="true" />
+            <element signature="e#210#507#0" />
+            <element signature="e#7474#9398#0" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/task.py">
+    <entry file="file://$PROJECT_DIR$/simulation.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1304">
-          <caret line="116" column="45" lean-forward="true" selection-start-line="116" selection-start-column="45" selection-end-line="116" selection-end-column="45" />
+        <state relative-caret-position="199">
+          <caret line="14" column="63" lean-forward="true" selection-start-line="14" selection-start-column="63" selection-end-line="14" selection-end-column="63" />
           <folding>
-            <element signature="e#1#30#0" expanded="true" />
-            <element signature="e#5980#7142#0" />
+            <element signature="e#2#132#0" expanded="true" />
           </folding>
         </state>
       </provider>
