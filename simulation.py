@@ -9,27 +9,49 @@ import datetime as dt
 if __name__ == '__main__':
     # create process environment
     env = Environment()
-    start_time = dt.time(9, 0)
-    end_time = dt.time(18, 0)
+    start_time = dt.time(0, 0)
+    end_time = dt.time(0, 5)
+    last_task_time = dt.time(0, 10)
     # create recorded data processor
-    finished_proc = ResultProcessor(env, name='finished tasks')
-    unfinished_proc = ResultProcessor(env, name='unfinished tasks')
-    # create task generator
-    generator = TaskGenerator(env, new_taskstack)
-    # first distribution processor
-    cs_taskstack = TaskStack()
-    sc_taskstack = TaskStack()
-    distribution_processor = TaskProcessor(env,
-                                           name='distribution',
-                                           capability=np.Inf,
-                                           start_time=start_time,
-                                           end_time=end_time,
-                                           process_time=0,
-                                           top_taskstack=new_taskstack,
-                                           down_taskstacks=[cs_taskstack,
-                                                            sc_taskstack],
-                                           downweights=[0.69, 0.31])
+    finished_proc = ResultProcessor(env, name='finished tasks', tick=0.5)
+    unfinished_proc = ResultProcessor(env, name='unfinished tasks', tick=0.5)
+    # create outer sourcing processor
+    os_proc = InnerTaskProcessor(env,
+                                 name='os_processor',
+                                 tick=0.5,
+                                 capability=2,
+                                 start_time=start_time,
+                                 end_time=end_time,
+                                 process_time=1.5,
+                                 down_processors=finished_proc,
+                                 downweights=None,
+                                 voucher_processor=None,
+                                 voucher_ratio=0,
+                                 extend_working=True,
+                                 last_task_time=last_task_time)
     # create crowd sourcing processor
-    cs_processor = TaskProcessor(env,
-                                 name='crowd_sourcing',
-                                 capability=np.Inf,)
+    cs_proc = TaskProcessor(env,
+                            name='cs_processor',
+                            tick=0.5,
+                            start_time=start_time,
+                            end_time=end_time,
+                            process_time=2,
+                            down_processors=[os_proc, finished_proc],
+                            downweights=[0.89, 0.11])
+    # create task generator
+    generator = TaskGenerator(env,
+                              name='task_generator',
+                              tick=1,
+                              down_processors=[cs_proc, os_proc],
+                              downweights=[0.69, 0.31])
+    # first distribution processor
+
+    # create crowd sourcing processor
+
+    # ----------------- Run Process ----------------- #
+    env.process(generator.work())
+    env.process(cs_proc.work())
+    env.process(os_proc.work())
+    env.process(finished_proc.work())
+    # run time
+    env.run(until=10)
