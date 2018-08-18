@@ -56,35 +56,6 @@ class Task(object):
         # create time stamp
         self.time_stamps.append(TaskTimeStamp(taskbase))
 
-    def to_next_stage(self, current_time, start_time, end_time):
-        """
-        current_time:
-        process_time: process time in current stage (unit in minute)
-        :return: bool result
-        """
-        if len(self.time_stamps) > 0:
-            assert isinstance(current_time, dt.datetime)
-            assert isinstance(start_time, dt.time)
-            assert isinstance(end_time, dt.time)
-            enter_stage_time = self.time_stamps[-1]['time']
-            if current_time.day == enter_stage_time.day:
-                if current_time.time() > end_time:
-                    processed_time = datetime_time(current_time, end_time) - enter_stage_time
-                else:
-                    processed_time = current_time - enter_stage_time
-            else:
-                if current_time.time() < start_time:
-                    processed_time = dt.timedelta()
-                else:
-                    processed_time = current_time - enter_stage_time
-                    delta_seconds = (start_time.hour + 24 - end_time.hour) * 3600 + \
-                                    (start_time.minute - end_time.minute) * 60
-                    processed_time -= dt.timedelta(seconds=delta_seconds)
-
-            return processed_time.total_seconds() >= self.process_time[-1]['time'] * 60
-        else:
-            raise ValueError('the task has no time stamp')
-
 class TaskBase(object):
     def __init__(self, env, name, tick):
         assert isinstance(env, Environment)
