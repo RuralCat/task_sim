@@ -66,7 +66,7 @@ class TaskStack(list):
 
     @property
     def is_empty(self):
-        return True if self.task_count == 0 else False
+        return True if self.task_count <= 0 else False
 
     def add_task(self, task):
         assert isinstance(task, Task)
@@ -157,11 +157,10 @@ class TaskProcessor(TaskBase):
                             self._add_new_task(task)
                 # get new task if processor is capable
                 while self.capable:
-                    if self.cache_taskstack.task_count == 0:
+                    if self.cache_taskstack.is_empty:
                         break
                     else:
-                        task = self._get_new_task()
-                        self._add_new_task(task)
+                        self._get_new_task()
             # update time
             yield self.env.timeout(self.tick)
             self.time_update(self.tick)
@@ -172,6 +171,7 @@ class TaskProcessor(TaskBase):
     def _get_new_task(self):
         task = self.cache_taskstack.pop_task()
         task.enter_processor(self)
+        self._add_new_task(task)
         return task
 
     def _add_new_task(self, task):
@@ -182,7 +182,6 @@ class TaskProcessor(TaskBase):
 
     def _tradition_push(self, task):
         # reset voucher to false when task go to next stage
-        task.voucher = False
         if isinstance(self.down_processors, TaskProcessor):
             self.down_processors.cache_taskstack.add_task(task)
         else:
@@ -255,9 +254,19 @@ class InnerTaskProcessor(TaskProcessor):
         working_flag = self.clock_time >= self.start_time and \
                        self.clock_time <= self.end_time
         if self.extend_working:
-            working_flag = working_flag or \
-                           self.working_taskstack.task_count > 0
+            working_flag = working_flag or not self.working_taskstack.is_empty
         return working_flag
+
+    @property
+    def capable(self):
+        return self.working_taskstack.task_count < self.capability and \
+               self.clock_time < self.last_task_time
+
+    def _get_new_task(self):
+        if self.clock_time < self.last_task_time:
+            task = self.cache_taskstack.pop_task()
+            task.enter_processor(self)
+            self._add_new_task(task)
 
     def _add_new_task(self, task):
         if self.extend_working:
@@ -283,8 +292,10 @@ class InnerTaskProcessor(TaskProcessor):
             self._tradition_push(task)
 
 class VoucherProcessor(TaskProcessor):
-    def __init__(self, env, name, tick=0.5, down_processors=[], topprocess_time_scale=1.0):
-        TaskProcessor.__init__(self, env, name, tick, down_processors=down_processors)
+    def __init__(self, env, name, tick=0.5, down_processors=[], downweights=None, process_time_scale=1.0):
+        TaskProcessor.__init__(self, env, name, tick,
+                               down_processors=down_processors,
+                               downweights=downweights)
         self.process_time_scale = process_time_scale
 
     def get_process_time(self):
@@ -297,7 +308,7 @@ class ResultProcessor(TaskProcessor):
 
     def work(self):
         while True:
-            while self.cache_taskstack.task_count > 0:
+            while not self.cache_taskstack.is_empty:
                 task = self._get_new_task()
                 self.result_stack.add_task(task)
             # update time
