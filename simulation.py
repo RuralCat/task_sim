@@ -11,13 +11,13 @@ if __name__ == '__main__':
     env = Environment()
     tick = 0.5
     start_time = dt.time(0, 0)
-    end_time = dt.time(0, 5)
-    last_task_time = dt.time(0, 5)
+    end_time = dt.time(0, 10)
+    last_task_time = dt.time(0, 10)
     ss_capability = 11
     ss_process_time = 1.5
     os_capability = 60
     os_process_time = 2
-    cs_process_time = 240
+    cs_process_time = 2
     run_time_days = 0
     run_time_hours = 0
     run_time_minutes = 10
@@ -95,3 +95,12 @@ if __name__ == '__main__':
                             hours=run_time_hours,
                             minutes=run_time_minutes).total_seconds() / 60
     env.run(until=run_time)
+    #
+    time_list = []
+    for task in finished_proc.result_stack:
+        time_list.append(task.time_consuming(['ss_voucher_processor', 'os_voucher_processor']))
+        print(task.id, time_list[-1])
+    total_time = dt.timedelta(0)
+    for time in time_list:
+        total_time += time
+    print('mean time ', total_time / len(time_list))

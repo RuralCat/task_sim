@@ -58,6 +58,27 @@ class Task(object):
         self.time_stamps.append(TaskTimeStamp(taskbase))
         print_task(self.id, taskbase.name, taskbase.now.isoformat(), 'leave')
 
+    def time_consuming(self, voucher_processor_name=None, with_voucher=False):
+        # the time of task creation
+        start_time = self.time_stamps[0].time
+        # the time of task finish
+        end_time = self.time_stamps[-1].time
+        # voucher time
+        voucher_time_list = []
+        for stamp in self.time_stamps:
+            if stamp.processor in voucher_processor_name:
+                voucher_time_list.append(stamp.time)
+        voucher_time = dt.timedelta(0)
+        for i in range(np.int(len(voucher_time_list) / 2)):
+            voucher_time += (voucher_time_list[2*i+1] - voucher_time_list[2*i])
+        # time consuming
+        if with_voucher:
+            time_consuming = end_time - start_time
+        else:
+            time_consuming = end_time - start_time - voucher_time
+
+        return time_consuming
+
 class TaskStack(list):
 
     @property
