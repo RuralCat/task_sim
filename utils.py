@@ -21,7 +21,7 @@ Task_Generation_Lamba = np.array([329, 142, 75, 50, 39, 53, 188,
                                   455, 832, 1396, 1857, 1954, 1849,
                                   1675, 1548, 1683, 1883, 1844, 1555,
                                   1380, 1454, 1426, 1193, 720]) / 60
-PRINT_ID = ['id_{}'.format(i) for i in range(10)]
+PRINT_ID = ['id_{}'.format(i) for i in range(0)]
 
 def print_task(id, processor_name, time, type='enter'):
     if id in PRINT_ID:

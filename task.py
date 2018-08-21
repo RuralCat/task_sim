@@ -223,6 +223,10 @@ class TaskGenerator(TaskProcessor):
 
     def work(self):
         while True:
+            # print rate of progress
+            if self.now.time() == dt.time(0,0):
+                print('current simulation time is {}'.format(self.now.date()))
+            # generate new tasks
             tasks = self._get_new_task()
             for task in tasks:
                 task.leave_processor(self)
@@ -230,6 +234,7 @@ class TaskGenerator(TaskProcessor):
             # update time
             yield self.env.timeout(self.tick)
             self.time_update(self.tick)
+
 
     @property
     def next_task_num(self):

@@ -2,8 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="009a6685-d406-441b-af79-9db85a63cffd" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/simulation.py" beforeDir="false" afterPath="$PROJECT_DIR$/simulation.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/task.py" beforeDir="false" afterPath="$PROJECT_DIR$/task.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -13,18 +12,19 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="CoverageDataManager">
-    <SUITE FILE_PATH="coverage/task_sim$simulation.coverage" NAME="simulation Coverage Results" MODIFIED="1534863778256" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/task_sim$utils.coverage" NAME="utils Coverage Results" MODIFIED="1534864041153" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/task_sim$utils.coverage" NAME="utils Coverage Results" MODIFIED="1534868625814" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/task_sim$simulation.coverage" NAME="simulation Coverage Results" MODIFIED="1534868633443" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/task_sim$task.coverage" NAME="task Coverage Results" MODIFIED="1534868630186" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
   <component name="FileEditorManager">
     <splitter split-orientation="horizontal" split-proportion="0.5">
       <split-first>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-          <file leaf-file-name="task.py" pinned="false" current-in-tab="false">
+          <file leaf-file-name="task.py" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/task.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="-1253">
-                  <caret line="36" column="42" selection-start-line="36" selection-start-column="42" selection-end-line="36" selection-end-column="42" />
+                <state relative-caret-position="210">
+                  <caret line="225" column="23" selection-start-line="225" selection-start-column="23" selection-end-line="225" selection-end-column="23" />
                   <folding>
                     <element signature="e#1#30#0" expanded="true" />
                     <element signature="e#974#1002#0" />
@@ -48,7 +48,7 @@
               </provider>
             </entry>
           </file>
-          <file leaf-file-name="utils.py" pinned="false" current-in-tab="true">
+          <file leaf-file-name="utils.py" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/utils.py">
               <provider selected="true" editor-type-id="text-editor">
                 <state relative-caret-position="374">
@@ -67,8 +67,8 @@
           <file leaf-file-name="simulation.py" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/simulation.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="-1444">
-                  <caret line="32" column="39" lean-forward="true" selection-start-line="32" selection-start-column="39" selection-end-line="32" selection-end-column="39" />
+                <state relative-caret-position="19">
+                  <caret line="127" column="28" lean-forward="true" selection-start-line="127" selection-start-column="28" selection-end-line="127" selection-end-column="28" />
                   <folding>
                     <element signature="e#2#132#0" expanded="true" />
                     <element signature="e#4619#4788#0" />
@@ -100,9 +100,9 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/task.py" />
         <option value="$PROJECT_DIR$/simulation.py" />
         <option value="$PROJECT_DIR$/utils.py" />
+        <option value="$PROJECT_DIR$/task.py" />
       </list>
     </option>
   </component>
@@ -162,7 +162,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.utils">
+  <component name="RunManager" selected="Python.simulation">
     <configuration name="simulation" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="task_sim" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -177,6 +177,25 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/simulation.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+    </configuration>
+    <configuration name="task" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="task_sim" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/task.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -204,11 +223,13 @@
     <list>
       <item itemvalue="Python.simulation" />
       <item itemvalue="Python.utils" />
+      <item itemvalue="Python.task" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.utils" />
         <item itemvalue="Python.simulation" />
+        <item itemvalue="Python.task" />
+        <item itemvalue="Python.utils" />
       </list>
     </recent_temporary>
   </component>
@@ -301,6 +322,13 @@
           <caret line="288" column="54" selection-start-line="288" selection-start-column="54" selection-end-line="288" selection-end-column="54" />
           <folding>
             <element signature="e#1#30#0" expanded="true" />
+            <element signature="e#974#1002#0" />
+            <element signature="e#1053#1707#0" />
+            <element signature="e#2731#6581#0" />
+            <element signature="e#7277#7402#0" />
+            <element signature="e#7441#7746#0" />
+            <element signature="e#7791#7927#0" />
+            <element signature="e#9463#10057#0" />
           </folding>
         </state>
       </provider>
@@ -340,6 +368,13 @@
           <caret line="139" column="56" selection-start-line="139" selection-start-column="56" selection-end-line="139" selection-end-column="56" />
           <folding>
             <element signature="e#1#30#0" expanded="true" />
+            <element signature="e#974#1002#0" />
+            <element signature="e#1053#1707#0" />
+            <element signature="e#2731#6581#0" />
+            <element signature="e#7277#7402#0" />
+            <element signature="e#7441#7746#0" />
+            <element signature="e#7791#7927#0" />
+            <element signature="e#9463#10057#0" />
           </folding>
         </state>
       </provider>
@@ -350,6 +385,13 @@
           <caret line="123" column="13" selection-start-line="123" selection-start-column="13" selection-end-line="123" selection-end-column="13" />
           <folding>
             <element signature="e#1#30#0" expanded="true" />
+            <element signature="e#974#1002#0" />
+            <element signature="e#1053#1707#0" />
+            <element signature="e#2731#6581#0" />
+            <element signature="e#7277#7402#0" />
+            <element signature="e#7441#7746#0" />
+            <element signature="e#7791#7927#0" />
+            <element signature="e#9463#10057#0" />
           </folding>
         </state>
       </provider>
@@ -404,16 +446,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/task.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="150">
-          <caret line="85" selection-start-line="85" selection-end-line="85" />
-          <folding>
-            <element signature="e#1#30#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/utils.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="374">
@@ -426,12 +458,29 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/simulation.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1444">
-          <caret line="32" column="39" lean-forward="true" selection-start-line="32" selection-start-column="39" selection-end-line="32" selection-end-column="39" />
+        <state relative-caret-position="19">
+          <caret line="127" column="28" lean-forward="true" selection-start-line="127" selection-start-column="28" selection-end-line="127" selection-end-column="28" />
           <folding>
             <element signature="e#2#132#0" expanded="true" />
             <element signature="e#4619#4788#0" />
             <element signature="e#4812#5344#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/task.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="210">
+          <caret line="225" column="23" selection-start-line="225" selection-start-column="23" selection-end-line="225" selection-end-column="23" />
+          <folding>
+            <element signature="e#1#30#0" expanded="true" />
+            <element signature="e#974#1002#0" />
+            <element signature="e#1053#1707#0" />
+            <element signature="e#2731#6581#0" />
+            <element signature="e#7277#7402#0" />
+            <element signature="e#7441#7746#0" />
+            <element signature="e#7791#7927#0" />
+            <element signature="e#9463#10057#0" />
           </folding>
         </state>
       </provider>
