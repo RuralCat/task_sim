@@ -26,4 +26,5 @@ def print_task(id, processor_name, time, type='enter'):
 
 if __name__ == '__main__':
     # dtime = Datetime(year=2000, month=1, day=1, hour=0, minute=0)
-    st.poisson.rvs()
+    day = datetime.datetime(2000, 1, 2).time()
+    print(day)

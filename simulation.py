@@ -12,7 +12,7 @@ class Simulation(object):
         self.env = Environment()
         # define paras
         self.tick = 0.5
-        self.start_time = dt.time(0, 0) 
+        self.start_time = dt.time(0, 0)
         self.end_time = dt.time(0, 10)
         self.last_task_time = dt.time(0, 10)
         self.ss_capability = 11
@@ -92,6 +92,7 @@ class Simulation(object):
                                   tick=1,
                                   down_processors=[self.cs_proc, self.os_proc],
                                   downweights=[0.69, 0.31])
+
     @property
     def run_time(self):
         return dt.timedelta(days=self.run_time_days,
@@ -113,16 +114,46 @@ class Simulation(object):
         self.env.run(until=self.run_time)
 
     def logging(self):
-        # compute mean
+        # compute mean time consuming
         time_list = []
-        for task in self.finished_proc.result_stack:
+        res_taskstack = self.finished_proc.result_stack
+        for task in res_taskstack:
             time_list.append(task.time_consuming(['ss_voucher_processor', 'os_voucher_processor']))
         total_time = dt.timedelta(0)
         for time in time_list:
             total_time += time
-        print('mean time ', total_time / len(time_list))
+        mean_time = total_time / len(time_list)
+        # compute mean work time
+        os_res = TaskStack()
+        ss_res = TaskStack()
+        while not res_taskstack.is_empty:
+            task = res_taskstack.pop_task()
+            name = task.time_stamps[-2].processor
+            if name == 'os_processor':
+                os_res.add_task(task)
+            elif name == 'ss_processor':
+                ss_res.add_task(task)
+        os_work_time = self._get_work_time(os_res)
+        ss_work_time = self._get_work_time(ss_res)
+
+        return mean_time, os_work_time, ss_work_time
+
+    def _get_work_time(self, taskstack):
+        work_time = []
+        current_day = taskstack[0].time_stamps[-2].time.date()
+        for i in range(taskstack.task_count):
+            day = taskstack[i].time_stamps[-2].time.date()
+            if day > current_day:
+                current_day = day
+                work_time.append(taskstack[i - 1].time_stamps[-2].time.time())
+
+        return work_time
+
 
 if __name__ == '__main__':
     sim = Simulation()
     sim.run()
-    sim.logging()
+    mean_time, os_work_time, ss_work_time = sim.logging()
+    print(mean_time)
+    print(os_work_time)
+    print(ss_work_time)

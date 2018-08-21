@@ -269,6 +269,7 @@ class InnerTaskProcessor(TaskProcessor):
         self.voucher_ratio = voucher_ratio
         self.extend_working = extend_working
         self.last_task_time = last_task_time
+        self.working_flag = False
 
     @property
     def working(self):
