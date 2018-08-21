@@ -12,15 +12,15 @@ class Simulation(object):
         self.env = Environment()
         # define paras
         self.tick = 0.5
-        self.start_time = dt.time(0, 0)
-        self.end_time = dt.time(0, 10)
-        self.last_task_time = dt.time(0, 10)
+        self.start_time = dt.time(9, 0)
+        self.end_time = dt.time(18, 0)
+        self.last_task_time = dt.time(18, 0)
         self.ss_capability = 11
         self.ss_process_time = 1.5
         self.os_capability = 60
         self.os_process_time = 2
-        self.cs_process_time = 2
-        self.run_time_days = 0
+        self.cs_process_time = 240
+        self.run_time_days = 30
         self.run_time_hours = 0
         self.run_time_minutes = 10
         self.extend_working = True
