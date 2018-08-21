@@ -163,6 +163,8 @@ class TaskProcessor(TaskBase):
 
     def work(self):
         while True:
+            if self.now.time() == self.start_time:
+                print('cache size in {} is {}'.format(self.name, self.cache_taskstack.task_count))
             # run this work function evety 1 time unit
             # process in work time
             if self.working:
@@ -177,11 +179,8 @@ class TaskProcessor(TaskBase):
                         else:
                             self._add_new_task(task)
                 # get new task if processor is capable
-                while self.capable:
-                    if self.cache_taskstack.is_empty:
-                        break
-                    else:
-                        self._get_new_task()
+                while not self.cache_taskstack.is_empty and self.capable:
+                    self._get_new_task()
             # update time
             yield self.env.timeout(self.tick)
             self.time_update(self.tick)
@@ -286,14 +285,18 @@ class InnerTaskProcessor(TaskProcessor):
 
     @property
     def capable(self):
-        return self.working_taskstack.task_count < self.capability and \
-               self.clock_time < self.last_task_time
+        capable_flag = self.working_taskstack.task_count < self.capability
+        if self.clock_time >= self.start_time and self.clock_time <= self.end_time:
+            pass
+        else:
+            capable_flag = capable_flag and \
+                           self.cache_taskstack[0].time_stamps[-1].time.time() < self.last_task_time
+        return capable_flag
 
     def _get_new_task(self):
-        if self.clock_time < self.last_task_time:
-            task = self.cache_taskstack.pop_task()
-            task.enter_processor(self)
-            self._add_new_task(task)
+        task = self.cache_taskstack.pop_task()
+        task.enter_processor(self)
+        self._add_new_task(task)
 
     def _add_new_task(self, task):
         if self.extend_working:
