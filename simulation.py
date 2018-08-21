@@ -11,19 +11,19 @@ class Simulation(object):
         # create process environment
         self.env = Environment()
         # define paras
-        self.tick = 0.5
-        self.start_time = dt.time(9, 0)
-        self.end_time = dt.time(18, 0)
-        self.last_task_time = dt.time(18, 0)
-        self.ss_capability = 11
-        self.ss_process_time = 1.5
-        self.os_capability = 60
-        self.os_process_time = 2
-        self.cs_process_time = 240
-        self.run_time_days = 30
-        self.run_time_hours = 0
-        self.run_time_minutes = 10
-        self.extend_working = True
+        self.tick = 0.5 # 模拟时间步长，单位 分钟
+        self.start_time = dt.time(9, 0) # 上班时间
+        self.end_time = dt.time(18, 0) # 下班时间
+        self.last_task_time = dt.time(18, 0) # 接收的最后工作时间
+        self.ss_capability = 11 # 自营人数
+        self.ss_process_time = 1.5 # 自营处理一个任务需要的时间
+        self.os_capability = 60 # 外包人数
+        self.os_process_time = 2 # 外包处理一个任务需要的时间
+        self.cs_process_time = 240 # 众包处理一个任务需要的时间
+        self.run_time_days = 30 # 模拟天数
+        self.run_time_hours = 0 # 模拟小时数
+        self.run_time_minutes = 10 # 模拟分钟数
+        self.extend_working = True # 是否加班
         # create processors
         self.processors = {}
         self._create_processors()
