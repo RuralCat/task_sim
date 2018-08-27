@@ -165,6 +165,8 @@ class TaskProcessor(TaskBase):
         while True:
             if self.now.time() == self.start_time:
                 print('cache size in {} is {}'.format(self.name, self.cache_taskstack.task_count))
+            if self.name == 'ss_processor':
+                print(self.now, self.cache_taskstack.task_count, self.working_taskstack.task_count)
             # run this work function evety 1 time unit
             # process in work time
             if self.working:
@@ -299,8 +301,8 @@ class InnerTaskProcessor(TaskProcessor):
         self._add_new_task(task)
 
     def _add_new_task(self, task):
-        if self.extend_working:
-            t = task.time_stamps[-1].time.time()
+        if self.extend_working and self.clock_time > self.last_task_time:
+            t = task.time_stamps[-2].time.time()
             if t < self.last_task_time:
                 self.working_taskstack.add_task(task)
         else:

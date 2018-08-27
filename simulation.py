@@ -20,7 +20,7 @@ class Simulation(object):
         self.os_capability = 60 # 外包人数
         self.os_process_time = 2 # 外包处理一个任务需要的分钟
         self.cs_process_time = 240 # 众包处理一个任务需要的时间
-        self.run_time_days = 30 # 模拟天数
+        self.run_time_days = 5 # 模拟天数
         self.run_time_hours = 0 # 模拟小时数
         self.run_time_minutes = 10 # 模拟分钟数
         self.extend_working = True # 是否加班
