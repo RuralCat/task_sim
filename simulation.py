@@ -50,10 +50,11 @@ class Simulation(object):
                                          last_task_time=self.last_task_time)
         # create ss voucher processot
         self.ss_voucher_proc = VoucherProcessor(self.env,
-                                           name='ss_voucher_processor',
-                                           tick=self.tick,
-                                           down_processors=self.ss_proc,
-                                           process_time_scale=1/1542) #自营凭证补传平均时间分钟
+                                                name='ss_voucher_processor',
+                                                tick=self.tick,
+                                                down_processors=[self.ss_proc, self.unfinished_proc],
+                                                downweights=[0.91, 0.09],
+                                                process_time_scale=1/1542) #自营凭证补传平均时间分钟
         self.ss_proc.voucher_processor = self.ss_voucher_proc
         # create outer sourcing processor
         self.os_proc = InnerTaskProcessor(self.env,

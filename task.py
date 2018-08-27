@@ -165,7 +165,7 @@ class TaskProcessor(TaskBase):
         while True:
             if self.now.time() == self.start_time:
                 print('cache size in {} is {}'.format(self.name, self.cache_taskstack.task_count))
-            if self.name == 'ss_processor':
+            if self.name == 'ns_processor':
                 print(self.now, self.cache_taskstack.task_count, self.working_taskstack.task_count)
             # run this work function evety 1 time unit
             # process in work time
