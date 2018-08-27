@@ -102,7 +102,7 @@ class TaskBase(object):
         self.env = env
         self.name = name
         self.tick = tick
-        self._time = dt.datetime(2000, 1, 1)
+        self._time = dt.datetime(2018, 1, 1)
 
     @property
     def now(self):

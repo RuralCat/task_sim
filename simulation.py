@@ -16,9 +16,9 @@ class Simulation(object):
         self.end_time = dt.time(18, 0) # 下班时间
         self.last_task_time = dt.time(18, 0) # 接收的最后工作时间
         self.ss_capability = 11 # 自营人数
-        self.ss_process_time = 1.5 # 自营处理一个任务需要的时间
+        self.ss_process_time = 1.5 # 自营处理一个任务需要的分钟
         self.os_capability = 60 # 外包人数
-        self.os_process_time = 2 # 外包处理一个任务需要的时间
+        self.os_process_time = 2 # 外包处理一个任务需要的分钟
         self.cs_process_time = 240 # 众包处理一个任务需要的时间
         self.run_time_days = 30 # 模拟天数
         self.run_time_hours = 0 # 模拟小时数
@@ -45,7 +45,7 @@ class Simulation(object):
                                          end_time=self.end_time,
                                          process_time=self.ss_process_time,
                                          down_processors=self.finished_proc,
-                                         voucher_ratio=0.1,
+                                         voucher_ratio=0.16,  #自营补传凭证比例
                                          extend_working=self.extend_working,
                                          last_task_time=self.last_task_time)
         # create ss voucher processot
@@ -53,7 +53,7 @@ class Simulation(object):
                                            name='ss_voucher_processor',
                                            tick=self.tick,
                                            down_processors=self.ss_proc,
-                                           process_time_scale=1.0)
+                                           process_time_scale=1/1542) #自营凭证补传平均时间分钟
         self.ss_proc.voucher_processor = self.ss_voucher_proc
         # create outer sourcing processor
         self.os_proc = InnerTaskProcessor(self.env,
@@ -64,9 +64,9 @@ class Simulation(object):
                                      end_time=self.end_time,
                                      process_time=self.os_process_time,
                                      down_processors=[self.finished_proc, self.ss_proc],
-                                     downweights=[0.59, 0.41],
+                                     downweights=[0.41, 0.59], #外包半智能完结占比
                                      voucher_processor=None,
-                                     voucher_ratio=0.4,
+                                     voucher_ratio=0.4, #外包补传凭证占比
                                      extend_working=self.extend_working,
                                      last_task_time=self.last_task_time)
         # create os voucher processor
@@ -74,8 +74,8 @@ class Simulation(object):
                                            name='os_voucher_processor',
                                            tick=self.tick,
                                            down_processors=[self.os_proc, self.unfinished_proc],
-                                           downweights=[0.5, 0.5],
-                                           process_time_scale=1.0)
+                                           downweights=[0.43, 0.57], #外包补传凭证的上传概率
+                                           process_time_scale=1/2505) #外包补传凭证平均时间分钟
         self.os_proc.voucher_processor = self.os_voucher_proc
         # create crowd sourcing processor
         self.cs_proc = TaskProcessor(self.env,
@@ -85,13 +85,13 @@ class Simulation(object):
                                 end_time=self.end_time,
                                 process_time=self.cs_process_time,
                                 down_processors=[self.os_proc, self.finished_proc],
-                                downweights=[0.89, 0.11])
+                                downweights=[0.90, 0.10]) #众包完结流入外包占比
         # create task generator
         self.generator = TaskGenerator(self.env,
                                   name='task_generator',
                                   tick=1,
-                                  down_processors=[self.cs_proc, self.os_proc],
-                                  downweights=[0.69, 0.31])
+                                  down_processors=[self.cs_proc, self.os_proc,self.ss_proc],
+                                  downweights=[0.79, 0.20,0.01])#自营流入众包、外包、自营占比
 
     @property
     def run_time(self):
