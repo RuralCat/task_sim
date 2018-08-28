@@ -128,18 +128,26 @@ class Simulation(object):
         self.env.run(until=self.run_time)
 
     def logging(self):
-        # compute mean time consuming
-        time_list = []
+        # get result task stack
         res_taskstack = self.finished_proc.result_stack
+        # get each task type and time consuming
+        time_list = []
+        type_list = []
         for task in res_taskstack:
             time_list.append(task.time_consuming(['ss_voucher_processor', 'os_voucher_processor']))
+            type_list.append(task.time_stamps[-2].processor)
+        # reject the first two
+        if len(time_list) > 2:
+            time_list = time_list[2:]
+            type_list = type_list[2:]
+        # compute mean time consuming & completion rate in time
         total_time = dt.timedelta(0)
         completion_in24_rate = 0
-        if len(time_list) > 2: time_list = time_list[2:]
-        for time in time_list:
-            total_time += time
-            if time <= dt.timedelta(hours=24):
-                completion_in24_rate += 1
+        intime_condition = {'cs_processor': 23.5, 'os_processor' : 20.2, 'ss_processor' : 22.4}
+        system_time = {'cs_processor': 0.5, 'os_processor' : 3.8, 'ss_processor' : 1.6}
+        for time, finish_type in zip(time_list, type_list):
+            total_time = total_time + time + system_time[finish_type]
+            completion_in24_rate += np.int(time < dt.timedelta(hours=intime_condition[finish_type]))
         mean_time = round(total_time.total_seconds()/ 3600 / len(time_list), 3)
         completion_in24_rate = round(completion_in24_rate / len(time_list), 3)
         # get work time
@@ -154,13 +162,13 @@ class Simulation(object):
                 ss_res.add_task(task)
         os_work_time = self._get_work_time(os_res)
         ss_work_time = self._get_work_time(ss_res)
-        os_work_tt = 0
-        ss_work_tt = 0
         # reject the first two
         if len(os_work_time) > 2:
             os_work_time = os_work_time[2:]
             ss_work_time = ss_work_time[2:]
         # compute mean work time
+        fos_work_tt = 0
+        ss_work_tt = 0
         for i in range(len(os_work_time)):
             os_work_tt += os_work_time[i].hour + os_work_time[i].minute / 60
             ss_work_tt += ss_work_time[i].hour + ss_work_time[i].minute / 60
