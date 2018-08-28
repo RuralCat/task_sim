@@ -6,9 +6,10 @@ from simpy import Environment
 import numpy as np
 import datetime as dt
 import pandas as pd
+import time
 
 class Simulation(object):
-    def __init__(self):
+    def __init__(self, save_path, show_logging=True):
         # create process environment
         self.env = Environment()
         # define paras
@@ -21,17 +22,21 @@ class Simulation(object):
         self.os_capability = 60 # 外包人数
         self.os_process_time = 2 # 外包处理一个任务需要的分钟
         self.cs_process_time = 120 # 众包处理一个任务需要的时间
-        self.run_time_days = 3 # 模拟天数
+        self.run_time_days = 5 # 模拟天数
         self.run_time_hours = 0 # 模拟小时数
         self.run_time_minutes = 0 # 模拟分钟数
         self.extend_working = True # 是否加班
         # create processors
         self.processors = {}
         self._create_processors()
+        # save path
+        self.save_path = save_path
+        self.show_logging = show_logging
 
     def set_param(self, name, value):
         if hasattr(self, name):
             self.__setattr__(name, value)
+            self.env = Environment()
             self._create_processors()
         else:
             raise AttributeError('simulation do not has this attribution')
@@ -129,14 +134,15 @@ class Simulation(object):
         for task in res_taskstack:
             time_list.append(task.time_consuming(['ss_voucher_processor', 'os_voucher_processor']))
         total_time = dt.timedelta(0)
-        lvyue_cnt = 0
+        completion_in24_rate = 0
+        if len(time_list) > 2: time_list = time_list[2:]
         for time in time_list:
             total_time += time
             if time <= dt.timedelta(hours=24):
-                lvyue_cnt += 1
-        mean_time = round(total_time.total_seconds()/ 3600 / len(time_list),3)
-        lvyue_rate = round(lvyue_cnt / len(time_list),3)
-        # compute mean work time
+                completion_in24_rate += 1
+        mean_time = round(total_time.total_seconds()/ 3600 / len(time_list), 3)
+        completion_in24_rate = round(completion_in24_rate / len(time_list), 3)
+        # get work time
         os_res = TaskStack()
         ss_res = TaskStack()
         while not res_taskstack.is_empty:
@@ -150,13 +156,34 @@ class Simulation(object):
         ss_work_time = self._get_work_time(ss_res)
         os_work_tt = 0
         ss_work_tt = 0
+        # reject the first two
+        if len(os_work_time) > 2:
+            os_work_time = os_work_time[2:]
+            ss_work_time = ss_work_time[2:]
+        # compute mean work time
         for i in range(len(os_work_time)):
-            os_work_tt += os_work_time[i].hour + os_work_time[i].minute/60
+            os_work_tt += os_work_time[i].hour + os_work_time[i].minute / 60
             ss_work_tt += ss_work_time[i].hour + ss_work_time[i].minute / 60
-        mean_os_work_time = round(os_work_tt / len(os_work_time),1)
-        mean_ss_work_time = round(ss_work_tt / len(os_work_time),1)
+        mean_os_work_time = round(os_work_tt / len(os_work_time), 1)
+        mean_ss_work_time = round(ss_work_tt / len(ss_work_time), 1)
 
-        return mean_time, lvyue_rate,os_work_time, ss_work_time, mean_os_work_time, mean_ss_work_time
+        return mean_time, completion_in24_rate, os_work_time, ss_work_time, mean_os_work_time, mean_ss_work_time
+
+    def save_logging(self, name='', value=''):
+        with open(self.save_path, 'a') as f:
+            st = '{}: {}'.format(name, value)
+            f.write(st + '\n')
+            if self.show_logging: print(st)
+
+    def save_default_attr(self):
+        attrs = ['tick', 'start_time', 'end_time', 'last_work_time', 'ss_capability',
+                 'ss_process_time', 'os_capability', 'os_process_time', 'cs_process_time',
+                 'extend_working', 'run_time_days']
+        self.save_logging('default parameters', '')
+        for attr in attrs:
+            if hasattr(self, attr):
+                self.save_logging(attr, self.__getattribute__(attr))
+        self.save_logging()
 
     def _get_work_time(self, taskstack):
         work_time = []
@@ -169,41 +196,54 @@ class Simulation(object):
 
         return work_time
 
-
 if __name__ == '__main__':
     mean_time_l = []
-    lvyue_rate_l = []
+    completion_in24_rate_l = []
     mean_os_work_time_l = []
     mean_ss_work_time_l = []
-    os_capabilitys = np.arange(55,80,1)
+    os_capabilitys = np.arange(55, 57, 1)
 
     # set adjustable parameter
     params = os_capabilitys
     param_name = 'os_capability'
+    # set save path
+    lt = time.localtime(time.time())
+    lt = '{}{}{}{}{}'.format(lt.tm_year, lt.tm_mon, lt.tm_mday, lt.tm_hour, lt.tm_min)
+    save_path = 'simulation_{}_{}_from{}to{}.txt'.format(lt, param_name, params[0], params[-1])
+    # create simulation
+    sim = Simulation(save_path)
+    # save params
+    sim.save_default_attr()
+    sim.save_logging('Adjustable Parameter', param_name)
+    sim.save_logging('Adjustable Range', params)
+    sim.save_logging()
     # loop by params
     for param in params:
-        # create simulation
-        sim = Simulation()
         # show param
-        print('Simulation: {} is {}'.format(param_name, param))
+        sim.save_logging('current {}'.format(param_name), param)
         # set param
         sim.set_param(param_name, param)
         # run
         sim.run()
-        # logging
-        mean_time, lvyue_rate,os_work_time, ss_work_time, \
+        # get analysis information
+        mean_time, completion_in24_rate,os_work_time, ss_work_time, \
         mean_os_work_time, mean_ss_work_time = sim.logging()
+        # save to list
         mean_time_l.append(mean_time)
-        lvyue_rate_l.append(lvyue_rate)
-        print(mean_time)
-        print(lvyue_rate)
-        print(os_work_time)
-        print(ss_work_time)
+        completion_in24_rate_l.append(completion_in24_rate)
         mean_os_work_time_l.append(mean_os_work_time)
         mean_ss_work_time_l.append(mean_ss_work_time)
-        print(mean_os_work_time)
-        print(mean_ss_work_time)
-    print(mean_time_l)
-    print(lvyue_rate_l)
-    print(mean_os_work_time_l)
-    print(mean_ss_work_time_l)
+        # save logging
+        sim.save_logging('mean task aging', mean_time)
+        sim.save_logging('task completion rate in 24 hours', completion_in24_rate)
+        sim.save_logging('outer sourcing work time', os_work_time)
+        sim.save_logging('self supporting work time', ss_work_time)
+        sim.save_logging('mean outer sourcing work time', mean_os_work_time)
+        sim.save_logging('mean self supporting work time', mean_ss_work_time)
+        sim.save_logging()
+    # save list
+    sim.save_logging('list res')
+    sim.save_logging('mean task aging list', mean_time_l)
+    sim.save_logging('task completion rate list', completion_in24_rate_l)
+    sim.save_logging('mean outer sourcing work time list', mean_os_work_time_l)
+    sim.save_logging('mean self supporting work time list', mean_ss_work_time_l)
