@@ -18,7 +18,7 @@ class Simulation(object):
         self.last_task_time = dt.time(18, 0) # 接收的最后工作时间
         self.ss_capability = 11 # 自营人数
         self.ss_process_time = 1.5 # 自营处理一个任务需要的分钟
-        self.os_capability = param # 外包人数
+        self.os_capability = 60 # 外包人数
         self.os_process_time = 2 # 外包处理一个任务需要的分钟
         self.cs_process_time = 120 # 众包处理一个任务需要的时间
         self.run_time_days = 3 # 模拟天数
@@ -28,6 +28,13 @@ class Simulation(object):
         # create processors
         self.processors = {}
         self._create_processors()
+
+    def set_param(self, name, value):
+        if hasattr(self, name):
+            self.__setattr__(name, value)
+            self._create_processors()
+        else:
+            raise AttributeError('simulation do not has this attribution')
 
     def _create_processors(self):
         # create recorded data processor
@@ -168,14 +175,26 @@ if __name__ == '__main__':
     lvyue_rate_l = []
     mean_os_work_time_l = []
     mean_ss_work_time_l = []
-    param_l = np.arange(55,80,1)
-    for param in param_l:
+    os_capabilitys = np.arange(55,80,1)
+
+    # set adjustable parameter
+    params = os_capabilitys
+    param_name = 'os_capability'
+    # loop by params
+    for param in params:
+        # create simulation
         sim = Simulation()
+        # show param
+        print('Simulation: {} is {}'.format(param_name, param))
+        # set param
+        sim.set_param(param_name, param)
+        # run
         sim.run()
-        mean_time, lvyue_rate,os_work_time, ss_work_time, mean_os_work_time, mean_ss_work_time = sim.logging()
+        # logging
+        mean_time, lvyue_rate,os_work_time, ss_work_time, \
+        mean_os_work_time, mean_ss_work_time = sim.logging()
         mean_time_l.append(mean_time)
         lvyue_rate_l.append(lvyue_rate)
-        print(param)
         print(mean_time)
         print(lvyue_rate)
         print(os_work_time)
