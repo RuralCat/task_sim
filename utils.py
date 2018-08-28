@@ -21,6 +21,8 @@ Task_Generation_Lamba = np.array([153, 59, 28, 16, 13, 28, 123,
                                   288, 487, 780, 991, 1058, 954,
                                   795, 729, 886, 985,933, 811, 701,
                                   713, 752, 634, 351]) / 60
+OMIT_TIME = [12]
+
 PRINT_ID = ['id_{}'.format(i) for i in range(0)]
 
 def print_task(id, processor_name, time, type='enter'):

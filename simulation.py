@@ -5,24 +5,25 @@ from task import TaskGenerator, TaskStack, TaskProcessor, VoucherType, \
 from simpy import Environment
 import numpy as np
 import datetime as dt
+import pandas as pd
 
 class Simulation(object):
     def __init__(self):
         # create process environment
         self.env = Environment()
         # define paras
-        self.tick = 0.5 # 模拟时间步长，单位 分钟
+        self.tick = 0.5 #模拟时间步长，单位 分钟
         self.start_time = dt.time(9, 0) # 上班时间
         self.end_time = dt.time(18, 0) # 下班时间
         self.last_task_time = dt.time(18, 0) # 接收的最后工作时间
         self.ss_capability = 11 # 自营人数
         self.ss_process_time = 1.5 # 自营处理一个任务需要的分钟
-        self.os_capability = 60 # 外包人数
+        self.os_capability = param # 外包人数
         self.os_process_time = 2 # 外包处理一个任务需要的分钟
-        self.cs_process_time = 240 # 众包处理一个任务需要的时间
-        self.run_time_days = 5 # 模拟天数
+        self.cs_process_time = 120 # 众包处理一个任务需要的时间
+        self.run_time_days = 3 # 模拟天数
         self.run_time_hours = 0 # 模拟小时数
-        self.run_time_minutes = 10 # 模拟分钟数
+        self.run_time_minutes = 0 # 模拟分钟数
         self.extend_working = True # 是否加班
         # create processors
         self.processors = {}
@@ -36,7 +37,7 @@ class Simulation(object):
         self.unfinished_proc = ResultProcessor(self.env,
                                                name='unfinished tasks',
                                                tick=self.tick)
-        # creare self-support processor
+        # create self-support processor
         self.ss_proc = InnerTaskProcessor(self.env,
                                          name='ss_processor',
                                          tick=self.tick,
@@ -65,7 +66,7 @@ class Simulation(object):
                                      end_time=self.end_time,
                                      process_time=self.os_process_time,
                                      down_processors=[self.finished_proc, self.ss_proc],
-                                     downweights=[0.41, 0.59], #外包半智能完结占比
+                                     downweights=[0.57, 0.43], #外包半智能完结占比
                                      voucher_processor=None,
                                      voucher_ratio=0.4, #外包补传凭证占比
                                      extend_working=self.extend_working,
@@ -121,9 +122,13 @@ class Simulation(object):
         for task in res_taskstack:
             time_list.append(task.time_consuming(['ss_voucher_processor', 'os_voucher_processor']))
         total_time = dt.timedelta(0)
+        lvyue_cnt = 0
         for time in time_list:
             total_time += time
-        mean_time = total_time / len(time_list)
+            if time <= dt.timedelta(hours=24):
+                lvyue_cnt += 1
+        mean_time = round(total_time.total_seconds()/ 3600 / len(time_list),3)
+        lvyue_rate = round(lvyue_cnt / len(time_list),3)
         # compute mean work time
         os_res = TaskStack()
         ss_res = TaskStack()
@@ -136,8 +141,15 @@ class Simulation(object):
                 ss_res.add_task(task)
         os_work_time = self._get_work_time(os_res)
         ss_work_time = self._get_work_time(ss_res)
+        os_work_tt = 0
+        ss_work_tt = 0
+        for i in range(len(os_work_time)):
+            os_work_tt += os_work_time[i].hour + os_work_time[i].minute/60
+            ss_work_tt += ss_work_time[i].hour + ss_work_time[i].minute / 60
+        mean_os_work_time = round(os_work_tt / len(os_work_time),1)
+        mean_ss_work_time = round(ss_work_tt / len(os_work_time),1)
 
-        return mean_time, os_work_time, ss_work_time
+        return mean_time, lvyue_rate,os_work_time, ss_work_time, mean_os_work_time, mean_ss_work_time
 
     def _get_work_time(self, taskstack):
         work_time = []
@@ -152,9 +164,27 @@ class Simulation(object):
 
 
 if __name__ == '__main__':
-    sim = Simulation()
-    sim.run()
-    mean_time, os_work_time, ss_work_time = sim.logging()
-    print(mean_time)
-    print(os_work_time)
-    print(ss_work_time)
+    mean_time_l = []
+    lvyue_rate_l = []
+    mean_os_work_time_l = []
+    mean_ss_work_time_l = []
+    param_l = np.arange(55,80,1)
+    for param in param_l:
+        sim = Simulation()
+        sim.run()
+        mean_time, lvyue_rate,os_work_time, ss_work_time, mean_os_work_time, mean_ss_work_time = sim.logging()
+        mean_time_l.append(mean_time)
+        lvyue_rate_l.append(lvyue_rate)
+        print(param)
+        print(mean_time)
+        print(lvyue_rate)
+        print(os_work_time)
+        print(ss_work_time)
+        mean_os_work_time_l.append(mean_os_work_time)
+        mean_ss_work_time_l.append(mean_ss_work_time)
+        print(mean_os_work_time)
+        print(mean_ss_work_time)
+    print(mean_time_l)
+    print(lvyue_rate_l)
+    print(mean_os_work_time_l)
+    print(mean_ss_work_time_l)

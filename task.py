@@ -163,10 +163,10 @@ class TaskProcessor(TaskBase):
 
     def work(self):
         while True:
-            if self.now.time() == self.start_time:
-                print('cache size in {} is {}'.format(self.name, self.cache_taskstack.task_count))
-            if self.name == 'ns_processor':
-                print(self.now, self.cache_taskstack.task_count, self.working_taskstack.task_count)
+            #if self.now.time() == self.start_time:
+            #    print('cache size in {} is {}'.format(self.name, self.cache_taskstack.task_count))
+            #if self.name == 'ns_processor':
+            #    print(self.now, self.cache_taskstack.task_count, self.working_taskstack.task_count)
             # run this work function evety 1 time unit
             # process in work time
             if self.working:
@@ -317,7 +317,7 @@ class InnerTaskProcessor(TaskProcessor):
                 task.voucher = VoucherType.LACKED
         else:
             task.voucher = VoucherType.SUFFICIENT
-        # push task into diffrent branch according to voucher type
+        # push task into different branch according to voucher type
         if task.voucher == VoucherType.LACKED:
             self.voucher_processor.cache_taskstack.add_task(task)
         else:
