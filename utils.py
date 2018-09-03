@@ -17,10 +17,14 @@ def datetime_time(date, time):
     return datetime.datetime(date.year, date.month, date.day,
                              time.hour, time.minute)
 
-Task_Generation_Lamba = np.array([153, 59, 28, 16, 13, 28, 123,
-                                  288, 487, 780, 991, 1058, 954,
-                                  795, 729, 886, 985,933, 811, 701,
-                                  713, 752, 634, 351]) / 60
+def plot_graph():
+    pass
+
+
+Task_Generation_Distribution = np.array([0.012, 0.004, 0.002, 0.001, 0.001, 0.002,
+                                         0.009, 0.022, 0.037, 0.059, 0.075, 0.080,
+                                         0.072, 0.060, 0.055, 0.067, 0.074, 0.070,
+                                         0.061, 0.053, 0.054, 0.057, 0.048, 0.026])
 OMIT_TIME = [12]
 
 PRINT_ID = ['id_{}'.format(i) for i in range(0)]

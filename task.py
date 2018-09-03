@@ -3,7 +3,7 @@ from simpy import Environment
 import numpy as np
 from enum import Enum
 import datetime as dt
-from utils import Task_Generation_Lamba, print_task
+from utils import Task_Generation_Distribution, print_task
 
 class TaskTimeStamp(object):
     def __init__(self, taskbase, process_time=None):
@@ -217,10 +217,11 @@ class TaskProcessor(TaskBase):
 
 class TaskGenerator(TaskProcessor):
     def __init__(self, env, name='task_generator', tick=1,
-                 down_processors=[], downweights=None):
+                 down_processors=[], downweights=None, create_cnt=1e4, create_cancel=0.02):
         TaskProcessor.__init__(self, env, name, tick,
                                down_processors=down_processors, downweights=downweights)
         self.task_count = 0
+        self.create_cnt_dist = create_cnt * Task_Generation_Distribution * (1 - create_cancel) / 60
 
     def work(self):
         while True:
@@ -239,8 +240,7 @@ class TaskGenerator(TaskProcessor):
 
     @property
     def next_task_num(self):
-        hour = self.clock_time.hour
-        lam = Task_Generation_Lamba[hour]
+        lam = self.create_cnt_dist[self.clock_time.hour]
         return np.random.poisson(lam, size=1).__int__()
 
     def _get_new_task(self):

@@ -1,5 +1,10 @@
 .idea/
 __pycache__/
+.ipynb_checkpoints/
 
 # txt
 *.txt
+!setting.txt
+
+# jupyter notebook
+*.ipynb

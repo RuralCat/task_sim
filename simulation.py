@@ -8,24 +8,46 @@ import datetime as dt
 import pandas as pd
 import time
 
+SIMULATION_ATTRS = ['tick', 'start_time', 'end_time', 'last_task_time', 'ss_capability',
+                 'ss_process_time', 'os_capability', 'os_process_time', 'cs_process_time',
+                 'run_time_days', 'extend_working', 'create_cnt', 'create_cancel', 'create_cs',
+                 'create_os', 'create_ss', 'cs_finish', 'cs_os', 'os_voucher', 'os_voucher_os',
+                 'os_finish_ss', 'ss_voucher', 'ss_voucher_ss']
+
 class Simulation(object):
-    def __init__(self, save_path, show_logging=True):
+    def __init__(self, save_path, show_logging=True, init_paras_from_text=True):
         # create process environment
         self.env = Environment()
         # define paras
-        self.tick = 0.5 #模拟时间步长，单位 分钟
-        self.start_time = dt.time(9, 0) # 上班时间
-        self.end_time = dt.time(18, 0) # 下班时间
-        self.last_task_time = dt.time(18, 0) # 接收的最后工作时间
-        self.ss_capability = 11 # 自营人数
-        self.ss_process_time = 1.5 # 自营处理一个任务需要的分钟
-        self.os_capability = 60 # 外包人数
-        self.os_process_time = 2 # 外包处理一个任务需要的分钟
-        self.cs_process_time = 120 # 众包处理一个任务需要的时间
-        self.run_time_days = 5 # 模拟天数
-        self.run_time_hours = 0 # 模拟小时数
-        self.run_time_minutes = 0 # 模拟分钟数
-        self.extend_working = True # 是否加班
+        if init_paras_from_text:
+            self.__init_paras_fomr_text()
+        else:
+            self.tick = 0.5 #模拟时间步长，单位 分钟
+            self.start_time = dt.time(9, 0) # 上班时间
+            self.end_time = dt.time(18, 0) # 下班时间
+            self.last_task_time = dt.time(18, 0) # 接收的最后工作时间
+            self.ss_capability = 11 # 自营人数
+            self.ss_process_time = 1.5 # 自营处理一个任务需要的分钟
+            self.os_capability = 88 # 外包人数
+            self.os_process_time = 2 # 外包处理一个任务需要的分钟
+            self.cs_process_time = 120 # 众包处理一个任务需要的时间
+            self.run_time_days = 15 # 模拟天数
+            self.extend_working = True # 是否加班
+            self.create_cnt = 16000  # 工单创建量
+            self.create_cancel = 0.02 # 创建_剔除
+            self.create_cs = 0.79 # 创建剔除_众包
+            self.create_os = 0.20 # 创建剔除_外包
+            self.create_ss = 0.01 # 创建剔除_自营
+            self.cs_finish = 0.10 # 众包_完结
+            self.cs_os = 0.90 # 众包_外包
+            self.os_voucher = 0.40 # 外包_凭证
+            self.os_voucher_os = 0.43 # 外包凭证_返回
+            self.os_finish_ss = 0.59 # 外包完结_自营
+            self.ss_voucher = 0.16 # 自营_凭证
+            self.ss_voucher_ss = 0.91 # 自营凭证_返回
+
+        self.run_time_hours = 0  # 模拟小时数
+        self.run_time_minutes = 0  # 模拟分钟数
         # create processors
         self.processors = {}
         self._create_processors()
@@ -58,7 +80,7 @@ class Simulation(object):
                                          end_time=self.end_time,
                                          process_time=self.ss_process_time,
                                          down_processors=self.finished_proc,
-                                         voucher_ratio=0.16,  #自营补传凭证比例
+                                         voucher_ratio=self.ss_voucher,  #自营补传凭证比例
                                          extend_working=self.extend_working,
                                          last_task_time=self.last_task_time)
         # create ss voucher processot
@@ -66,7 +88,7 @@ class Simulation(object):
                                                 name='ss_voucher_processor',
                                                 tick=self.tick,
                                                 down_processors=[self.ss_proc, self.unfinished_proc],
-                                                downweights=[0.91, 0.09],
+                                                downweights=[self.ss_voucher_ss, 1-self.ss_voucher_ss], #凭证返回比例
                                                 process_time_scale=1/1542) #自营凭证补传平均时间分钟
         self.ss_proc.voucher_processor = self.ss_voucher_proc
         # create outer sourcing processor
@@ -78,9 +100,9 @@ class Simulation(object):
                                      end_time=self.end_time,
                                      process_time=self.os_process_time,
                                      down_processors=[self.finished_proc, self.ss_proc],
-                                     downweights=[0.57, 0.43], #外包半智能完结占比
+                                     downweights=[1-self.os_finish_ss, self.os_finish_ss], #外包半智能完结比例
                                      voucher_processor=None,
-                                     voucher_ratio=0.4, #外包补传凭证占比
+                                     voucher_ratio=self.os_voucher, #外包补传凭证占比
                                      extend_working=self.extend_working,
                                      last_task_time=self.last_task_time)
         # create os voucher processor
@@ -88,7 +110,7 @@ class Simulation(object):
                                            name='os_voucher_processor',
                                            tick=self.tick,
                                            down_processors=[self.os_proc, self.unfinished_proc],
-                                           downweights=[0.43, 0.57], #外包补传凭证的上传概率
+                                           downweights=[self.os_voucher_os, 1-self.os_voucher_os], #外包补传凭证的上传概率
                                            process_time_scale=1/2505) #外包补传凭证平均时间分钟
         self.os_proc.voucher_processor = self.os_voucher_proc
         # create crowd sourcing processor
@@ -99,13 +121,30 @@ class Simulation(object):
                                 end_time=self.end_time,
                                 process_time=self.cs_process_time,
                                 down_processors=[self.os_proc, self.finished_proc],
-                                downweights=[0.90, 0.10]) #众包完结流入外包占比
+                                downweights=[1-self.cs_finish, self.cs_finish]) #众包完结流入外包占比
         # create task generator
         self.generator = TaskGenerator(self.env,
                                   name='task_generator',
                                   tick=1,
                                   down_processors=[self.cs_proc, self.os_proc,self.ss_proc],
-                                  downweights=[0.79, 0.20,0.01])#自营流入众包、外包、自营占比
+                                  downweights=[self.create_cs, self.create_os,1-self.create_cs-self.create_os],#自营流入众包、外包、自营占比
+                                  create_cnt=self.create_cnt,# 创建量
+                                  create_cancel = self.create_cancel)#创建后直接取消比例
+
+    def __init_paras_from_text(self):
+        # read setting
+        _, words = read_setting()
+        values = []
+        for word in words[:-4]:
+            values.append(float(word))
+        # set setting to simulation
+        for value, attr in zip(values, SIMULATION_ATTRS):
+            if attr in ['start_time', 'end_time', 'last_task_time']:
+                hour = np.int(value)
+                minute = np.int((value - hour) * 60)
+                self.__setattr__(attr, dt.time(hour, minute))
+            else:
+                self.__setattr__(attr, value)
 
     @property
     def run_time(self):
@@ -146,7 +185,7 @@ class Simulation(object):
         intime_condition = {'cs_processor': 23.5, 'os_processor' : 20.2, 'ss_processor' : 22.4}
         system_time = {'cs_processor': 0.5, 'os_processor' : 3.8, 'ss_processor' : 1.6}
         for time, finish_type in zip(time_list, type_list):
-            total_time = total_time + time + system_time[finish_type]
+            total_time = total_time + time + dt.timedelta(hours = system_time[finish_type])
             completion_in24_rate += np.int(time < dt.timedelta(hours=intime_condition[finish_type]))
         mean_time = round(total_time.total_seconds()/ 3600 / len(time_list), 3)
         completion_in24_rate = round(completion_in24_rate / len(time_list), 3)
@@ -164,10 +203,10 @@ class Simulation(object):
         ss_work_time = self._get_work_time(ss_res)
         # reject the first two
         if len(os_work_time) > 2:
-            os_work_time = os_work_time[2:]
-            ss_work_time = ss_work_time[2:]
+            os_work_time = os_work_time[2:-1]
+            ss_work_time = ss_work_time[2:-1]
         # compute mean work time
-        fos_work_tt = 0
+        os_work_tt = 0
         ss_work_tt = 0
         for i in range(len(os_work_time)):
             os_work_tt += os_work_time[i].hour + os_work_time[i].minute / 60
@@ -184,11 +223,8 @@ class Simulation(object):
             if self.show_logging: print(st)
 
     def save_default_attr(self):
-        attrs = ['tick', 'start_time', 'end_time', 'last_work_time', 'ss_capability',
-                 'ss_process_time', 'os_capability', 'os_process_time', 'cs_process_time',
-                 'extend_working', 'run_time_days']
         self.save_logging('default parameters', '')
-        for attr in attrs:
+        for attr in SIMULATION_ATTRS:
             if hasattr(self, attr):
                 self.save_logging(attr, self.__getattribute__(attr))
         self.save_logging()
@@ -204,22 +240,42 @@ class Simulation(object):
 
         return work_time
 
+def read_setting(setting_path='setting.txt'):
+    # read text to parse setting
+    attr_name = []
+    words = []
+    with open('setting.txt', 'r') as fid:
+        lines = fid.readlines()
+        for line in lines:
+            attr_name.append(line.split('=')[0].replace(' ', ''))
+            words.append(line.split('=')[1].split('#')[0].replace(' ', ''))
+    return attr_name, words
+
 if __name__ == '__main__':
+    # define paras
+    bread_setting = True
     mean_time_l = []
     completion_in24_rate_l = []
     mean_os_work_time_l = []
     mean_ss_work_time_l = []
-    os_capabilitys = np.arange(55, 57, 1)
+    os_capabilitys = np.arange(85, 90, 1)
+    ss_capabilitys = np.arange(15, 20, 1)
 
     # set adjustable parameter
-    params = os_capabilitys
-    param_name = 'os_capability'
+    if bread_setting:
+        attr_names, words = read_setting()
+        params = np.arange(float(words[-3]), float(words[-2]), float(words[-1]))
+        index = attr_names.index(words[-4])
+        param_name = SIMULATION_ATTRS[index]
+    else:
+        params = ss_capabilitys
+        param_name = 'ss_capability'
     # set save path
     lt = time.localtime(time.time())
     lt = '{}{}{}{}{}'.format(lt.tm_year, lt.tm_mon, lt.tm_mday, lt.tm_hour, lt.tm_min)
     save_path = 'simulation_{}_{}_from{}to{}.txt'.format(lt, param_name, params[0], params[-1])
     # create simulation
-    sim = Simulation(save_path)
+    sim = Simulation(save_path, init_paras_from_text=bread_setting)
     # save params
     sim.save_default_attr()
     sim.save_logging('Adjustable Parameter', param_name)
@@ -255,3 +311,5 @@ if __name__ == '__main__':
     sim.save_logging('task completion rate list', completion_in24_rate_l)
     sim.save_logging('mean outer sourcing work time list', mean_os_work_time_l)
     sim.save_logging('mean self supporting work time list', mean_ss_work_time_l)
+    # plot
+
