@@ -50,14 +50,14 @@ if __name__ == '__main__':
 
     plt.rcParams['font.sans-serif'] = ['Microsoft Yahei']
 
-    title = "自营人数变化影响 - 外包88人"
+    title = "自营人数变化影响"
     xmajorLocator = MultipleLocator(1)  # 将x主刻度标签设置为1的倍数
     xmajorFormatter = FormatStrFormatter('%1.1f')  # 设置x轴标签文本的格式
 
     fig = plt.figure()
     ax1 = fig.add_subplot(111)
-    ax1.plot(param_l, mean_time_l,label = "平均时效")
-    ax1.plot(param_l, mean_ss_work_time_l,label = '自营平均下班时间')
+    ax1.plot(param_l, mean_time_l, label = "平均时效")
+    ax1.plot(param_l, mean_ss_work_time_l, label = '自营平均下班时间')
     ax1.xaxis.set_major_locator(xmajorLocator)
     ax1.set_xlabel('自营人数',fontsize=14)
     ax1.set_ylabel('时效/下班时间',fontsize=14)

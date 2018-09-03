@@ -7,6 +7,8 @@ import numpy as np
 import datetime as dt
 import pandas as pd
 import time
+from utils import plot_graph
+import os
 
 SIMULATION_ATTRS = ['tick', 'start_time', 'end_time', 'last_task_time', 'ss_capability',
                  'ss_process_time', 'os_capability', 'os_process_time', 'cs_process_time',
@@ -20,7 +22,7 @@ class Simulation(object):
         self.env = Environment()
         # define paras
         if init_paras_from_text:
-            self.__init_paras_fomr_text()
+            self.__init_paras_from_text()
         else:
             self.tick = 0.5 #模拟时间步长，单位 分钟
             self.start_time = dt.time(9, 0) # 上班时间
@@ -267,15 +269,20 @@ if __name__ == '__main__':
         params = np.arange(float(words[-3]), float(words[-2]), float(words[-1]))
         index = attr_names.index(words[-4])
         param_name = SIMULATION_ATTRS[index]
+        title_name = words[-4]
     else:
         params = ss_capabilitys
         param_name = 'ss_capability'
+        title_name = '自营人数'
     # set save path
     lt = time.localtime(time.time())
     lt = '{}{}{}{}{}'.format(lt.tm_year, lt.tm_mon, lt.tm_mday, lt.tm_hour, lt.tm_min)
-    save_path = 'simulation_{}_{}_from{}to{}.txt'.format(lt, param_name, params[0], params[-1])
+    save_path = 'simulation_{}_{}_from{}to{}'.format(lt, param_name, params[0], params[-1])
+    if not os.path.exists('results'):
+        os.mkdir('results')
+    save_path = os.path.join('results', save_path)
     # create simulation
-    sim = Simulation(save_path, init_paras_from_text=bread_setting)
+    sim = Simulation(save_path + '.txt', init_paras_from_text=bread_setting)
     # save params
     sim.save_default_attr()
     sim.save_logging('Adjustable Parameter', param_name)
@@ -312,4 +319,6 @@ if __name__ == '__main__':
     sim.save_logging('mean outer sourcing work time list', mean_os_work_time_l)
     sim.save_logging('mean self supporting work time list', mean_ss_work_time_l)
     # plot
+    plot_graph(params, title_name, mean_time_l, completion_in24_rate_l,
+               mean_os_work_time_l, mean_ss_work_time_l, save_path + '.jpg')
 
